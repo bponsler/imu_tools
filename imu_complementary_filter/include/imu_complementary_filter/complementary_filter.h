@@ -37,7 +37,7 @@ namespace imu_tools {
 class ComplementaryFilter
 {
   public:
-    ComplementaryFilter();    
+    ComplementaryFilter();
     virtual ~ComplementaryFilter();
 
     bool setGainAcc(double gain);
@@ -48,6 +48,21 @@ class ComplementaryFilter
     bool setBiasAlpha(double bias_alpha);
     double getBiasAlpha() const;
 
+    bool setGravityConstant(double gravity);
+    double getGravityConstant() const;
+
+    bool setGamma(double gamma);
+    double getGamma() const;
+
+    bool setAccelerationThreshold(double acc_threshold);
+    double getAccelerationThreshold() const;
+
+    bool setDeltaAngularVelocityThreshold(double delta_ang_vel_threshold);
+    double getDeltaAngularVelocityThreshold() const;
+
+    bool setAngularVelocityThreshold(double ang_vel_threshold);
+    double getAngularVelocityThreshold() const;
+
     // When the filter is in the steady state, bias estimation will occur (if the
     // parameter is enabled).
     bool getSteadyState() const;
@@ -57,7 +72,7 @@ class ComplementaryFilter
 
     void setDoAdaptiveGain(bool do_adaptive_gain);
     bool getDoAdaptiveGain() const;
-  
+
     double getAngularVelocityBiasX() const;
     double getAngularVelocityBiasY() const;
     double getAngularVelocityBiasZ() const;
@@ -74,7 +89,7 @@ class ComplementaryFilter
     // [ax, ay, az]: Normalized gravity vector.
     // [wx, wy, wz]: Angular veloctiy, in rad / s.
     // dt: time delta, in seconds.
-    void update(double ax, double ay, double az, 
+    void update(double ax, double ay, double az,
                 double wx, double wy, double wz,
                 double dt);
 
@@ -83,18 +98,20 @@ class ComplementaryFilter
     // [wx, wy, wz]: Angular veloctiy, in rad / s.
     // [mx, my, mz]: Magnetic field, units irrelevant.
     // dt: time delta, in seconds.
-    void update(double ax, double ay, double az, 
+    void update(double ax, double ay, double az,
                 double wx, double wy, double wz,
                 double mx, double my, double mz,
                 double dt);
 
   private:
-    static const double kGravity = 9.81;
-    static const double gamma_ = 0.01;
+    // Gravity constant parameter
+    double gravity_;
+    double gamma_;
+
     // Bias estimation steady state thresholds
-    static const double kAngularVelocityThreshold = 0.2;
-    static const double kAccelerationThreshold = 0.1;
-    static const double kDeltaAngularVelocityThreshold = 0.01;
+    double angular_velocity_threshold_;
+    double acceleration_threshold_;
+    double delta_angular_velocity_threshold_;
 
     // Gain parameter for the complementary filter, belongs in [0, 1].
     double gain_acc_;
@@ -105,7 +122,7 @@ class ComplementaryFilter
 
     // Parameter whether to do bias estimation or not.
     bool do_bias_estimation_;
-    
+
     // Parameter whether to do adaptive gain or not.
     bool do_adaptive_gain_;
 
@@ -114,7 +131,7 @@ class ComplementaryFilter
 
     // The orientation as a Hamilton quaternion (q0 is the scalar). Represents
     // the orientation of the fixed frame wrt the body frame.
-    double q0_, q1_, q2_, q3_; 
+    double q0_, q1_, q2_, q3_;
 
     // Bias in angular velocities;
     double wx_prev_, wy_prev_, wz_prev_;
@@ -122,36 +139,36 @@ class ComplementaryFilter
     // Bias in angular velocities;
     double wx_bias_, wy_bias_, wz_bias_;
 
-    void updateBiases(double ax, double ay, double az, 
+    void updateBiases(double ax, double ay, double az,
                       double wx, double wy, double wz);
 
-    bool checkState(double ax, double ay, double az, 
+    bool checkState(double ax, double ay, double az,
                     double wx, double wy, double wz) const;
 
     void getPrediction(
-        double wx, double wy, double wz, double dt, 
+        double wx, double wy, double wz, double dt,
         double& q0_pred, double& q1_pred, double& q2_pred, double& q3_pred) const;
-   
+
     void getMeasurement(
-        double ax, double ay, double az, 
+        double ax, double ay, double az,
         double& q0_meas, double& q1_meas, double& q2_meas, double& q3_meas);
 
     void getMeasurement(
-        double ax, double ay, double az, 
-        double mx, double my, double mz,  
+        double ax, double ay, double az,
+        double mx, double my, double mz,
         double& q0_meas, double& q1_meas, double& q2_meas, double& q3_meas);
 
     void getAccCorrection(
         double ax, double ay, double az,
         double p0, double p1, double p2, double p3,
         double& dq0, double& dq1, double& dq2, double& dq3);
-   
+
     void getMagCorrection(
         double mx, double my, double mz,
         double p0, double p1, double p2, double p3,
-        double& dq0, double& dq1, double& dq2, double& dq3); 
-    
-    double getAdaptiveGain(double alpha, double ax, double ay, double az);                   
+        double& dq0, double& dq1, double& dq2, double& dq3);
+
+    double getAdaptiveGain(double alpha, double ax, double ay, double az);
 };
 
 // Utility math functions:
@@ -161,7 +178,7 @@ void normalizeVector(double& x, double& y, double& z);
 void normalizeQuaternion(double& q0, double& q1, double& q2, double& q3);
 
 void scaleQuaternion(double gain,
-                     double& dq0, double& dq1, double& dq2, double& dq3); 
+                     double& dq0, double& dq1, double& dq2, double& dq3);
 
 void invertQuaternion(
     double q0, double q1, double q2, double q3,
